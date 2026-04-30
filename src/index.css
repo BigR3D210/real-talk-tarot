@@ -1,0 +1,239 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --gold: #c9a84c;
+    --gold-light: #e8cc7e;
+    --gold-dim: #7d6420;
+    --mystic: #4a2c8a;
+    --amethyst: #7c4dca;
+    --void: #07050f;
+    --dusk: #1a0f2e;
+  }
+
+  * {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: #07050f;
+    color: #f5f0e8;
+    font-family: 'Raleway', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background-color: rgba(201, 168, 76, 0.3);
+    color: #e8cc7e;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #07050f;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #2d1b5e;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #4a2c8a;
+  }
+}
+
+@layer components {
+  .gold-text {
+    background: linear-gradient(135deg, #c9a84c, #e8cc7e, #c9a84c);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .gold-border {
+    border: 1px solid rgba(201, 168, 76, 0.4);
+  }
+
+  .mystic-card {
+    background: linear-gradient(135deg, #0e0818 0%, #1a0f2e 100%);
+    border: 1px solid rgba(201, 168, 76, 0.25);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(201,168,76,0.1);
+  }
+
+  .glow-gold {
+    box-shadow: 0 0 20px rgba(201, 168, 76, 0.35), 0 0 40px rgba(201, 168, 76, 0.15);
+  }
+
+  .glow-mystic {
+    box-shadow: 0 0 20px rgba(124, 77, 202, 0.35), 0 0 40px rgba(124, 77, 202, 0.15);
+  }
+
+  .btn-gold {
+    @apply font-cinzel font-semibold tracking-widest uppercase text-sm px-8 py-4 rounded-sm;
+    background: linear-gradient(135deg, #c9a84c, #e8cc7e, #c9a84c);
+    background-size: 200% auto;
+    color: #07050f;
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-gold:hover {
+    background-position: right center;
+    box-shadow: 0 0 25px rgba(201, 168, 76, 0.5), 0 0 50px rgba(201, 168, 76, 0.25);
+    transform: translateY(-1px);
+  }
+
+  .btn-outline {
+    @apply font-cinzel font-semibold tracking-widest uppercase text-sm px-8 py-4 rounded-sm;
+    border: 1px solid rgba(201, 168, 76, 0.5);
+    color: #c9a84c;
+    background: transparent;
+    transition: all 0.4s ease;
+  }
+
+  .btn-outline:hover {
+    background: rgba(201, 168, 76, 0.1);
+    border-color: rgba(201, 168, 76, 0.8);
+    box-shadow: 0 0 20px rgba(201, 168, 76, 0.25);
+  }
+
+  .section-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(201,168,76,0.4), transparent);
+    margin: 2rem 0;
+  }
+
+  .card-tarot {
+    perspective: 1000px;
+    cursor: pointer;
+  }
+
+  .card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.7s cubic-bezier(0.4, 0.0, 0.2, 1);
+  }
+
+  .card-inner.flipped {
+    transform: rotateY(180deg);
+  }
+
+  .card-face, .card-back-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 8px;
+  }
+
+  .card-back-face {
+    transform: rotateY(180deg);
+  }
+
+  .star-field {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  .star {
+    position: absolute;
+    background: white;
+    border-radius: 50%;
+    animation: twinkle var(--duration, 3s) ease-in-out infinite;
+    animation-delay: var(--delay, 0s);
+  }
+
+  .nav-link {
+    @apply font-cinzel text-sm tracking-wider text-mist hover:text-gold-light transition-colors duration-300;
+  }
+
+  .nav-link.active {
+    @apply text-gold;
+  }
+
+  .reading-type-btn {
+    @apply p-4 rounded-sm text-center cursor-pointer transition-all duration-300;
+    border: 1px solid rgba(201,168,76,0.2);
+    background: rgba(26,15,46,0.5);
+  }
+
+  .reading-type-btn:hover, .reading-type-btn.selected {
+    border-color: rgba(201,168,76,0.7);
+    background: rgba(201,168,76,0.1);
+    box-shadow: 0 0 20px rgba(201,168,76,0.2);
+  }
+
+  .shimmer-text {
+    background: linear-gradient(90deg, #c9a84c 0%, #e8cc7e 25%, #c9a84c 50%, #f5e6a3 75%, #c9a84c 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 3s linear infinite;
+  }
+
+  .prose-mystic p {
+    @apply text-mist leading-relaxed mb-4 font-cormorant text-xl;
+  }
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.2; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.2); }
+}
+
+@keyframes orbFloat {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -20px) scale(1.05); }
+  66% { transform: translate(-20px, 15px) scale(0.95); }
+}
+
+.orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+  animation: orbFloat 12s ease-in-out infinite;
+}
+
+.fade-in-delayed {
+  opacity: 0;
+  animation: fadeUp 0.8s ease-out forwards;
+}
+
+.fade-in-delayed:nth-child(1) { animation-delay: 0.1s; }
+.fade-in-delayed:nth-child(2) { animation-delay: 0.2s; }
+.fade-in-delayed:nth-child(3) { animation-delay: 0.3s; }
+.fade-in-delayed:nth-child(4) { animation-delay: 0.4s; }
+.fade-in-delayed:nth-child(5) { animation-delay: 0.5s; }
+.fade-in-delayed:nth-child(6) { animation-delay: 0.6s; }
+
+@keyframes revealCard {
+  0% { opacity: 0; transform: translateY(40px) scale(0.85) rotateX(10deg); }
+  60% { transform: translateY(-5px) scale(1.02) rotateX(-2deg); }
+  100% { opacity: 1; transform: translateY(0) scale(1) rotateX(0deg); }
+}
+
+.card-reveal {
+  animation: revealCard 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  opacity: 0;
+}

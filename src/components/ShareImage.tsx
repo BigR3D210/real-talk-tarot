@@ -21,7 +21,23 @@ export default function ShareImage({ reading, onClose }: ShareImageProps) {
     if (!canvas) return;
 
     const W = 1080;
-    const H = 1350;
+    // Calculate dynamic height based on number of cards and content
+    const cards = reading.drawnCards;
+    const pad = 56;
+    const gap = 14;
+    const cardW = Math.floor((W - pad * 2 - gap * (cards.length - 1)) / cards.length);
+    const cardH = Math.floor(cardW * 1.55);
+    const questionLines = reading.question
+      ? wrapTextMeasure(reading.question, W - 180, 22).length
+      : 0;
+    const rtFont = 22;
+    // Estimate real talk lines (rough measure without ctx)
+    const rtCharsPerLine = Math.floor((W - 160) / (rtFont * 0.55));
+    const rtLineCount = Math.ceil(reading.realTalkMessage.length / rtCharsPerLine) + 1;
+    const H = Math.max(
+      1350,
+      90 + 60 + (questionLines * 34 + 36) + 36 + cardH + 50 + 40 + 36 + (rtLineCount * 34 + 32) + 80
+    );
     canvas.width = W;
     canvas.height = H;
     const ctx = canvas.getContext('2d')!;
@@ -112,12 +128,6 @@ export default function ShareImage({ reading, onClose }: ShareImageProps) {
     yPos += 38;
 
     // Cards
-    const cards = reading.drawnCards;
-    const gap = 14;
-    const pad = 56;
-    const cardW = Math.floor((W - pad * 2 - gap * (cards.length - 1)) / cards.length);
-    const cardH = Math.floor(cardW * 1.55);
-
     cards.forEach((drawn, i) => {
       const cx = pad + i * (cardW + gap);
       const cy = yPos;
@@ -311,4 +321,24 @@ function divider(ctx: CanvasRenderingContext2D, cx: number, y: number, halfW: nu
   ctx.fillText('✦', cx, y + 5);
   ctx.beginPath();
   ctx.moveTo(cx + 14, y); ctx.lineTo(cx + halfW, y); ctx.stroke();
+}
+
+// Rough line count estimate without a canvas context (uses avg char width)
+function wrapTextMeasure(text: string, maxWidth: number, fontSize: number): string[] {
+  const avgCharW = fontSize * 0.52;
+  const charsPerLine = Math.floor(maxWidth / avgCharW);
+  const words = text.split(' ');
+  const lines: string[] = [];
+  let current = '';
+  for (const word of words) {
+    const test = current ? `${current} ${word}` : word;
+    if (test.length > charsPerLine && current) {
+      lines.push(current);
+      current = word;
+    } else {
+      current = test;
+    }
+  }
+  if (current) lines.push(current);
+  return lines;
 }

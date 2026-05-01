@@ -1,0 +1,15 @@
+1. Extract the new zip into your Dropbox folder (replace the old one)
+
+2. cd "C:\Users\david\Dropbox\Real Talk Tarot\real-talk-tarot"
+
+3. npm install
+
+4. git add .
+
+5. git commit -m "describe what changed"
+
+6. git remote add origin https://github.com/BigR3D210/real-talk-tarot.git
+   (only needed if it's a fresh extract — skip if git remote already exists)
+
+7. git push
+   (first time after fresh extract use: git push -u origin main)

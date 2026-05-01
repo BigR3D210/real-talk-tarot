@@ -11,9 +11,9 @@ export default function Reading() {
   const [phase, setPhase] = useState<Phase>('select');
   const [reading, setReading] = useState<Reading | null>(null);
 
-  const handleReady = (readingType: ReadingType, spread: Spread) => {
+  const handleReady = (readingType: ReadingType, spread: Spread, question: string) => {
     const drawnCards = drawCards(spread);
-    const newReading = generateReading(drawnCards, readingType, spread);
+    const newReading = generateReading(drawnCards, readingType, spread, question);
     setReading(newReading);
     setPhase('result');
     window.scrollTo({ top: 0, behavior: 'smooth' });

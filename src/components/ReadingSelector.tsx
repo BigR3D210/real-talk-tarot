@@ -4,7 +4,7 @@ import { spreads, Spread } from '../data/spreads';
 import { readingTypeLabels, readingTypeEmojis } from '../utils/tarotEngine';
 
 interface ReadingSelectorProps {
-  onReady: (readingType: ReadingType, spread: Spread) => void;
+  onReady: (readingType: ReadingType, spread: Spread, question: string) => void;
 }
 
 const readingTypes: ReadingType[] = ['love', 'money', 'career', 'selfGrowth', 'yesNo', 'daily'];
@@ -21,6 +21,7 @@ const readingDescriptions: Record<ReadingType, string> = {
 export default function ReadingSelector({ onReady }: ReadingSelectorProps) {
   const [selectedType, setSelectedType] = useState<ReadingType | null>(null);
   const [selectedSpread, setSelectedSpread] = useState<Spread | null>(null);
+  const [question, setQuestion] = useState('');
   const [shuffling, setShuffling] = useState(false);
   const [shuffled, setShuffled] = useState(false);
 
@@ -35,7 +36,7 @@ export default function ReadingSelector({ onReady }: ReadingSelectorProps) {
 
   const handleReveal = () => {
     if (selectedType && selectedSpread) {
-      onReady(selectedType, selectedSpread);
+      onReady(selectedType, selectedSpread, question);
     }
   };
 
@@ -65,6 +66,31 @@ export default function ReadingSelector({ onReady }: ReadingSelectorProps) {
           ))}
         </div>
       </div>
+
+      {/* Question Input */}
+      {selectedType && (
+        <div className="animate-fade-up">
+          <h2 className="font-cinzel text-xl text-gold mb-2">Your Question</h2>
+          <p className="text-smoke text-sm mb-3 font-raleway">Optional — but the more specific you are, the more focused your reading.</p>
+          <textarea
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            placeholder={
+              selectedType === 'yesNo'
+                ? 'e.g. Should I take the job offer?'
+                : selectedType === 'love'
+                ? 'e.g. What do I need to know about this relationship?'
+                : selectedType === 'money'
+                ? 'e.g. What is blocking my financial growth right now?'
+                : 'e.g. What do I need to focus on this week?'
+            }
+            maxLength={200}
+            rows={2}
+            className="w-full bg-abyss border border-gold/20 rounded px-4 py-3 text-ivory font-raleway text-sm focus:outline-none focus:border-gold/50 placeholder:text-smoke/40 resize-none"
+          />
+          <p className="text-right text-smoke/40 font-raleway text-xs mt-1">{question.length}/200</p>
+        </div>
+      )}
 
       {/* Spread Selection */}
       {selectedType && (

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { type Reading, saveReading, readingTypeLabels, getCardMeaningForReading } from '../utils/tarotEngine';
 import { CardFront } from './CardReveal';
+import ShareImage from './ShareImage';
 
 interface ReadingResultProps {
   reading: Reading;
@@ -12,6 +13,7 @@ export default function ReadingResult({ reading, onStartOver }: ReadingResultPro
   const [copied, setCopied] = useState(false);
   const [revealedCards, setRevealedCards] = useState<Set<number>>(new Set());
   const [allRevealed, setAllRevealed] = useState(false);
+  const [showShareImage, setShowShareImage] = useState(false);
 
   const handleRevealCard = (index: number) => {
     const next = new Set(revealedCards);
@@ -52,6 +54,12 @@ export default function ReadingResult({ reading, onStartOver }: ReadingResultPro
             weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
           })}
         </p>
+        {reading.question && (
+          <div className="mt-4 inline-block mystic-card px-5 py-3 border-gold/20 bg-gold/5 max-w-lg">
+            <p className="text-smoke/60 font-raleway text-xs mb-1">Your Question</p>
+            <p className="text-ivory font-cormorant italic text-base">"{reading.question}"</p>
+          </div>
+        )}
       </div>
 
       {/* Cards */}
@@ -126,7 +134,7 @@ export default function ReadingResult({ reading, onStartOver }: ReadingResultPro
           </div>
 
           {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
+          <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2 flex-wrap">
             <button
               onClick={handleSave}
               disabled={saved}
@@ -134,8 +142,11 @@ export default function ReadingResult({ reading, onStartOver }: ReadingResultPro
             >
               {saved ? '✓ Reading Saved' : 'Save Reading'}
             </button>
+            <button onClick={() => setShowShareImage(true)} className="btn-gold px-6 py-2.5 text-sm">
+              Share as Image
+            </button>
             <button onClick={handleCopy} className="btn-outline px-6 py-2.5 text-sm">
-              {copied ? '✓ Copied!' : 'Copy Reading'}
+              {copied ? '✓ Copied!' : 'Copy Text'}
             </button>
             <button
               onClick={onStartOver}
@@ -144,6 +155,11 @@ export default function ReadingResult({ reading, onStartOver }: ReadingResultPro
               Start Another Reading
             </button>
           </div>
+
+          {/* Share Image Modal */}
+          {showShareImage && (
+            <ShareImage reading={reading} onClose={() => setShowShareImage(false)} />
+          )}
 
           {/* Disclaimer */}
           <p className="text-center text-xs text-smoke/60 font-raleway pt-2 max-w-xl mx-auto leading-relaxed">

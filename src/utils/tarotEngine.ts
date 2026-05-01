@@ -14,6 +14,7 @@ export interface Reading {
   readingType: ReadingType;
   spreadId: string;
   spreadName: string;
+  question: string;
   drawnCards: DrawnCard[];
   overallSummary: string;
   realTalkMessage: string;
@@ -189,7 +190,8 @@ const generateAdvice = (drawnCards: DrawnCard[], readingType: ReadingType): stri
 export const generateReading = (
   drawnCards: DrawnCard[],
   readingType: ReadingType,
-  spread: Spread
+  spread: Spread,
+  question: string = ''
 ): Reading => {
   return {
     id: `reading-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -202,6 +204,7 @@ export const generateReading = (
     readingType,
     spreadId: spread.id,
     spreadName: spread.name,
+    question,
     drawnCards,
     overallSummary: generateSummary(drawnCards, readingType),
     realTalkMessage: generateRealTalk(drawnCards),

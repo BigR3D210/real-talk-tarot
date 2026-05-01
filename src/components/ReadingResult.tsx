@@ -177,9 +177,10 @@ function buildShareText(reading: Reading): string {
   const cards = reading.drawnCards
     .map(d => `${d.position}: ${d.card.name}${d.isReversed ? ' (Reversed)' : ''}`)
     .join('\n');
+  const questionLine = reading.question ? `\nQuestion: "${reading.question}"\n` : '';
   return `Real Talk Tarot Reading - ${date}
 ${readingTypeLabels[reading.readingType]} | ${reading.spreadName}
-
+${questionLine}
 Cards:
 ${cards}
 
@@ -192,5 +193,5 @@ Real Talk:
 Guidance:
 ${reading.advice}
 
-realttalktarot.com`;
+realtalktarot.com`;
 }

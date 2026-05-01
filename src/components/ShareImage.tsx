@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { type Reading, readingTypeLabels, readingTypeEmojis } from '../utils/tarotEngine';
 
 interface ShareImageProps {
@@ -8,187 +8,217 @@ interface ShareImageProps {
 
 export default function ShareImage({ reading, onClose }: ShareImageProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [generated, setGenerated] = useState(false);
-  const [generating, setGenerating] = useState(false);
+  const [status, setStatus] = useState<'generating' | 'ready'>('generating');
 
-  const generate = () => {
+  useEffect(() => {
+    const timer = setTimeout(() => drawCard(), 150);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const drawCard = () => {
+    setStatus('generating');
     const canvas = canvasRef.current;
     if (!canvas) return;
-    setGenerating(true);
 
     const W = 1080;
-    const H = 1080;
+    const H = 1350;
     canvas.width = W;
     canvas.height = H;
     const ctx = canvas.getContext('2d')!;
 
-    // --- Background ---
+    // Background
     const bg = ctx.createLinearGradient(0, 0, W, H);
     bg.addColorStop(0, '#0a0612');
-    bg.addColorStop(0.5, '#110820');
+    bg.addColorStop(0.5, '#130920');
     bg.addColorStop(1, '#0d0518');
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, W, H);
 
-    // --- Stars ---
-    ctx.fillStyle = 'rgba(255,255,255,0.6)';
-    for (let i = 0; i < 80; i++) {
-      const x = Math.random() * W;
-      const y = Math.random() * H;
-      const r = Math.random() * 1.5 + 0.3;
+    // Stars
+    for (let i = 0; i < 110; i++) {
+      const alpha = Math.random() * 0.7 + 0.2;
+      ctx.fillStyle = `rgba(255,255,255,${alpha})`;
       ctx.beginPath();
-      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.arc(Math.random() * W, Math.random() * H, Math.random() * 1.5 + 0.2, 0, Math.PI * 2);
       ctx.fill();
     }
 
-    // --- Outer border ---
-    ctx.strokeStyle = 'rgba(201,168,76,0.4)';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(24, 24, W - 48, H - 48);
-
-    // --- Inner border ---
+    // Borders
+    ctx.strokeStyle = 'rgba(201,168,76,0.5)';
+    ctx.lineWidth = 2.5;
+    ctx.strokeRect(28, 28, W - 56, H - 56);
     ctx.strokeStyle = 'rgba(201,168,76,0.15)';
     ctx.lineWidth = 1;
-    ctx.strokeRect(36, 36, W - 72, H - 72);
+    ctx.strokeRect(42, 42, W - 84, H - 84);
 
-    // --- Corner ornaments ---
-    drawCornerOrn(ctx, 50, 50);
-    drawCornerOrn(ctx, W - 50, 50, true);
-    drawCornerOrn(ctx, 50, H - 50, false, true);
-    drawCornerOrn(ctx, W - 50, H - 50, true, true);
+    // Corner ornaments
+    ([
+      [56, 56, 1, 1], [W - 56, 56, -1, 1],
+      [56, H - 56, 1, -1], [W - 56, H - 56, -1, -1],
+    ] as [number, number, number, number][]).forEach(([x, y, sx, sy]) => {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.scale(sx, sy);
+      ctx.strokeStyle = 'rgba(201,168,76,0.55)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(0, 0); ctx.lineTo(26, 0);
+      ctx.moveTo(0, 0); ctx.lineTo(0, 26);
+      ctx.stroke();
+      ctx.restore();
+    });
 
-    // --- Site name ---
-    ctx.fillStyle = 'rgba(201,168,76,0.5)';
-    ctx.font = '500 22px Georgia, serif';
     ctx.textAlign = 'center';
+
+    // Site name
+    ctx.fillStyle = 'rgba(201,168,76,0.5)';
+    ctx.font = '500 21px Georgia, serif';
     ctx.fillText('✦  REAL TALK TAROT  ✦', W / 2, 90);
 
-    // --- Reading type badge ---
-    const emoji = readingTypeEmojis[reading.readingType];
-    const label = readingTypeLabels[reading.readingType].toUpperCase();
-    ctx.fillStyle = 'rgba(201,168,76,0.12)';
-    roundRect(ctx, W / 2 - 120, 108, 240, 36, 18);
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(201,168,76,0.35)';
+    // Thin divider under site name
+    ctx.strokeStyle = 'rgba(201,168,76,0.18)';
     ctx.lineWidth = 1;
-    roundRect(ctx, W / 2 - 120, 108, 240, 36, 18);
+    ctx.beginPath();
+    ctx.moveTo(160, 104); ctx.lineTo(W - 160, 104);
     ctx.stroke();
-    ctx.fillStyle = '#c9a84c';
-    ctx.font = '500 15px Georgia, serif';
-    ctx.fillText(`${emoji}  ${label}`, W / 2, 132);
 
-    // --- Question (if present) ---
-    let yStart = 185;
+    // Reading type pill
+    const pillLabel = `${readingTypeEmojis[reading.readingType]}  ${readingTypeLabels[reading.readingType].toUpperCase()}`;
+    ctx.font = '500 16px Georgia, serif';
+    const pillW = ctx.measureText(pillLabel).width + 52;
+    const pillX = (W - pillW) / 2;
+    ctx.fillStyle = 'rgba(201,168,76,0.1)';
+    roundRect(ctx, pillX, 116, pillW, 38, 19); ctx.fill();
+    ctx.strokeStyle = 'rgba(201,168,76,0.4)';
+    ctx.lineWidth = 1;
+    roundRect(ctx, pillX, 116, pillW, 38, 19); ctx.stroke();
+    ctx.fillStyle = '#c9a84c';
+    ctx.fillText(pillLabel, W / 2, 141);
+
+    let yPos = 186;
+
+    // Question
     if (reading.question) {
-      ctx.fillStyle = 'rgba(255,255,255,0.55)';
-      ctx.font = 'italic 20px Georgia, serif';
-      const wrapped = wrapText(ctx, `"${reading.question}"`, W - 160);
-      wrapped.forEach((line, i) => {
-        ctx.fillText(line, W / 2, yStart + i * 30);
+      ctx.fillStyle = 'rgba(255,255,255,0.5)';
+      ctx.font = 'italic 22px Georgia, serif';
+      const qLines = wrapText(ctx, `"${reading.question}"`, W - 180);
+      qLines.slice(0, 3).forEach((line, i) => {
+        ctx.fillText(line, W / 2, yPos + i * 34);
       });
-      yStart += wrapped.length * 30 + 20;
+      yPos += Math.min(qLines.length, 3) * 34 + 18;
     }
 
-    // --- Divider ---
-    drawDivider(ctx, W / 2, yStart, 200);
-    yStart += 30;
+    divider(ctx, W / 2, yPos, 190);
+    yPos += 38;
 
-    // --- Cards ---
+    // Cards
     const cards = reading.drawnCards;
-    const cardW = Math.min(180, (W - 120) / cards.length - 20);
-    const cardH = cardW * 1.5;
-    const totalCardsW = cards.length * (cardW + 16) - 16;
-    const cardStartX = (W - totalCardsW) / 2;
+    const gap = 14;
+    const pad = 56;
+    const cardW = Math.floor((W - pad * 2 - gap * (cards.length - 1)) / cards.length);
+    const cardH = Math.floor(cardW * 1.55);
 
     cards.forEach((drawn, i) => {
-      const cx = cardStartX + i * (cardW + 16);
-      const cy = yStart;
+      const cx = pad + i * (cardW + gap);
+      const cy = yPos;
 
-      // Card background
+      ctx.shadowColor = drawn.isReversed ? 'rgba(192,132,252,0.3)' : 'rgba(201,168,76,0.25)';
+      ctx.shadowBlur = 18;
+
       const cardBg = ctx.createLinearGradient(cx, cy, cx + cardW, cy + cardH);
       cardBg.addColorStop(0, '#1a0f2e');
-      cardBg.addColorStop(1, '#2d1b5e');
+      cardBg.addColorStop(1, '#2a1650');
       ctx.fillStyle = cardBg;
-      roundRect(ctx, cx, cy, cardW, cardH, 10);
-      ctx.fill();
+      roundRect(ctx, cx, cy, cardW, cardH, 12); ctx.fill();
 
-      // Card border
-      ctx.strokeStyle = drawn.isReversed
-        ? 'rgba(192,132,252,0.5)'
-        : 'rgba(201,168,76,0.6)';
+      ctx.shadowBlur = 0;
+
+      ctx.strokeStyle = drawn.isReversed ? 'rgba(192,132,252,0.65)' : 'rgba(201,168,76,0.7)';
       ctx.lineWidth = 1.5;
-      roundRect(ctx, cx, cy, cardW, cardH, 10);
+      roundRect(ctx, cx, cy, cardW, cardH, 12); ctx.stroke();
+
+      // Top glow line
+      const topGlow = ctx.createLinearGradient(cx, cy, cx + cardW, cy);
+      topGlow.addColorStop(0, 'transparent');
+      topGlow.addColorStop(0.5, drawn.isReversed ? 'rgba(192,132,252,0.45)' : 'rgba(201,168,76,0.45)');
+      topGlow.addColorStop(1, 'transparent');
+      ctx.strokeStyle = topGlow;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(cx + 12, cy + 1.5); ctx.lineTo(cx + cardW - 12, cy + 1.5);
       ctx.stroke();
 
       // Symbol
+      const symPx = Math.floor(cardW * 0.28);
       ctx.fillStyle = '#c9a84c';
-      ctx.font = `${Math.floor(cardW * 0.28)}px Georgia, serif`;
-      ctx.textAlign = 'center';
-      ctx.fillText(drawn.card.symbol, cx + cardW / 2, cy + cardH * 0.42);
+      ctx.font = `${symPx}px Georgia, serif`;
+      ctx.fillText(drawn.card.symbol, cx + cardW / 2, cy + cardH * 0.43);
 
-      // Card name
+      // Name
+      const namePx = Math.max(11, Math.floor(cardW * 0.092));
       ctx.fillStyle = '#e8dcc8';
-      ctx.font = `bold ${Math.floor(cardW * 0.1)}px Georgia, serif`;
-      const nameLines = wrapText(ctx, drawn.card.name, cardW - 16);
-      nameLines.forEach((line, li) => {
-        ctx.fillText(line, cx + cardW / 2, cy + cardH * 0.62 + li * (cardW * 0.12));
+      ctx.font = `bold ${namePx}px Georgia, serif`;
+      wrapText(ctx, drawn.card.name, cardW - 14).slice(0, 2).forEach((line, li) => {
+        ctx.fillText(line, cx + cardW / 2, cy + cardH * 0.60 + li * (namePx + 5));
       });
 
-      // Reversed badge
+      // Reversed tag
       if (drawn.isReversed) {
-        ctx.fillStyle = 'rgba(192,132,252,0.15)';
-        roundRect(ctx, cx + 8, cy + cardH - 28, cardW - 16, 20, 6);
-        ctx.fill();
+        ctx.fillStyle = 'rgba(192,132,252,0.18)';
+        roundRect(ctx, cx + 6, cy + cardH - 26, cardW - 12, 20, 6); ctx.fill();
         ctx.fillStyle = '#c084fc';
-        ctx.font = `${Math.floor(cardW * 0.08)}px Georgia, serif`;
-        ctx.fillText('REVERSED', cx + cardW / 2, cy + cardH - 14);
+        ctx.font = `bold ${Math.max(9, Math.floor(cardW * 0.072))}px Georgia, serif`;
+        ctx.fillText('REVERSED', cx + cardW / 2, cy + cardH - 12);
       }
 
-      // Position label below card
-      ctx.fillStyle = 'rgba(201,168,76,0.7)';
+      // Position label
+      ctx.fillStyle = 'rgba(201,168,76,0.6)';
       ctx.font = `12px Georgia, serif`;
-      ctx.fillText(drawn.position, cx + cardW / 2, cy + cardH + 20);
+      ctx.fillText(drawn.position.toUpperCase(), cx + cardW / 2, cy + cardH + 22);
     });
 
-    yStart += cardH + 44;
+    yPos += cardH + 52;
 
-    // --- Divider ---
-    drawDivider(ctx, W / 2, yStart, 160);
-    yStart += 30;
+    divider(ctx, W / 2, yPos, 150);
+    yPos += 42;
 
-    // --- Real Talk ---
+    // Real Talk header
     ctx.fillStyle = '#c084fc';
-    ctx.font = '500 16px Georgia, serif';
-    ctx.fillText('⚡  REAL TALK', W / 2, yStart);
-    yStart += 28;
+    ctx.font = '600 17px Georgia, serif';
+    ctx.fillText('⚡  REAL TALK', W / 2, yPos);
+    yPos += 34;
 
-    ctx.fillStyle = '#f0e8ff';
-    ctx.font = `italic 21px Georgia, serif`;
+    // Real Talk box
+    ctx.font = `italic 22px Georgia, serif`;
     const rtLines = wrapText(ctx, `"${reading.realTalkMessage}"`, W - 160);
+    const rtBoxH = rtLines.length * 34 + 32;
+    ctx.fillStyle = 'rgba(192,132,252,0.07)';
+    roundRect(ctx, 72, yPos - 16, W - 144, rtBoxH, 12); ctx.fill();
+    ctx.strokeStyle = 'rgba(192,132,252,0.22)';
+    ctx.lineWidth = 1;
+    roundRect(ctx, 72, yPos - 16, W - 144, rtBoxH, 12); ctx.stroke();
+    ctx.fillStyle = '#ede0ff';
     rtLines.forEach((line, i) => {
-      ctx.fillText(line, W / 2, yStart + i * 32);
+      ctx.fillText(line, W / 2, yPos + 10 + i * 34);
     });
-    yStart += rtLines.length * 32 + 24;
+    yPos += rtBoxH + 32;
 
-    // --- Divider ---
-    drawDivider(ctx, W / 2, yStart, 100);
-    yStart += 24;
+    divider(ctx, W / 2, yPos, 110);
+    yPos += 32;
 
-    // --- URL watermark ---
-    ctx.fillStyle = 'rgba(201,168,76,0.4)';
-    ctx.font = '14px Georgia, serif';
-    ctx.fillText('realtalktarot.com', W / 2, yStart + 10);
+    // URL
+    ctx.fillStyle = 'rgba(201,168,76,0.38)';
+    ctx.font = '600 18px Georgia, serif';
+    ctx.fillText('realtalktarot.com', W / 2, yPos + 8);
 
-    // Done
-    setGenerating(false);
-    setGenerated(true);
+    setStatus('ready');
   };
 
   const download = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const link = document.createElement('a');
-    link.download = `real-talk-tarot-${Date.now()}.png`;
+    link.download = 'real-talk-tarot-reading.png';
     link.href = canvas.toDataURL('image/png');
     link.click();
   };
@@ -199,83 +229,45 @@ export default function ShareImage({ reading, onClose }: ShareImageProps) {
       onClick={onClose}
     >
       <div
-        className="mystic-card max-w-lg w-full p-6 border-gold/40 max-h-[90vh] overflow-y-auto"
+        className="mystic-card max-w-sm w-full p-5 border-gold/40 max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between mb-5">
-          <h2 className="font-cinzel text-gold text-lg">Share Your Reading</h2>
-          <button onClick={onClose} className="text-smoke hover:text-gold transition-colors font-cinzel text-xl leading-none">✕</button>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-cinzel text-gold text-base">Share Your Reading</h2>
+          <button onClick={onClose} className="text-smoke hover:text-gold transition-colors text-lg leading-none">✕</button>
         </div>
 
-        {!generated ? (
-          <div className="text-center space-y-5">
-            <p className="text-mist font-cormorant italic text-base">
-              Generate a shareable image for Instagram, Facebook, or wherever you post.
-            </p>
-            <div className="grid grid-cols-2 gap-3 text-xs font-raleway text-smoke">
-              <div className="mystic-card p-3 border-gold/15">
-                <div className="text-gold mb-1">✦</div>
-                <p>Your cards and positions</p>
-              </div>
-              <div className="mystic-card p-3 border-gold/15">
-                <div className="text-gold mb-1">⚡</div>
-                <p>Your Real Talk message</p>
-              </div>
-              <div className="mystic-card p-3 border-gold/15">
-                <div className="text-gold mb-1">☽</div>
-                <p>Dark luxury aesthetic</p>
-              </div>
-              <div className="mystic-card p-3 border-gold/15">
-                <div className="text-gold mb-1">◈</div>
-                <p>1080x1080 square format</p>
-              </div>
-            </div>
-            <button
-              onClick={generate}
-              disabled={generating}
-              className="btn-gold w-full py-3 text-sm"
-            >
-              {generating ? (
-                <span className="flex items-center justify-center gap-2">
-                  <span className="animate-spin">✦</span> Generating...
-                </span>
-              ) : 'Generate Image'}
-            </button>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <canvas
-              ref={canvasRef}
-              className="w-full rounded border border-gold/20"
-              style={{ display: 'block' }}
-            />
-            <div className="flex gap-3">
-              <button onClick={download} className="btn-gold flex-1 py-2.5 text-sm">
-                Download PNG
-              </button>
-              <button
-                onClick={() => setGenerated(false)}
-                className="btn-outline px-4 py-2.5 text-sm"
-              >
-                Regenerate
-              </button>
-            </div>
-            <p className="text-smoke/50 font-raleway text-xs text-center">
-              Save the image then post it anywhere. Tag us if you share it!
-            </p>
+        {status === 'generating' && (
+          <div className="h-40 flex items-center justify-center">
+            <span className="animate-spin text-gold text-3xl">✦</span>
           </div>
         )}
 
-        {/* Hidden canvas for pre-generation */}
-        {!generated && (
-          <canvas ref={canvasRef} style={{ display: 'none' }} />
+        {/* Canvas — always in DOM so ref stays valid, hidden while generating */}
+        <canvas
+          ref={canvasRef}
+          className={`w-full block rounded border border-gold/20 mb-4 ${status === 'generating' ? 'hidden' : ''}`}
+        />
+
+        {status === 'ready' && (
+          <div className="space-y-3">
+            <div className="flex gap-2">
+              <button onClick={download} className="btn-gold flex-1 py-2.5 text-sm">
+                Download PNG
+              </button>
+              <button onClick={drawCard} className="btn-outline px-4 py-2.5 text-sm">
+                Regenerate
+              </button>
+            </div>
+            <p className="text-smoke/40 font-raleway text-xs text-center">
+              1080×1350 — sized for Instagram, Facebook, anywhere.
+            </p>
+          </div>
         )}
       </div>
     </div>
   );
 }
-
-// --- Canvas helpers ---
 
 function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
   const words = text.split(' ');
@@ -294,10 +286,7 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number)
   return lines;
 }
 
-function roundRect(
-  ctx: CanvasRenderingContext2D,
-  x: number, y: number, w: number, h: number, r: number
-) {
+function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
   ctx.lineTo(x + w - r, y);
@@ -311,38 +300,15 @@ function roundRect(
   ctx.closePath();
 }
 
-function drawDivider(ctx: CanvasRenderingContext2D, cx: number, y: number, halfW: number) {
-  ctx.strokeStyle = 'rgba(201,168,76,0.3)';
+function divider(ctx: CanvasRenderingContext2D, cx: number, y: number, halfW: number) {
+  ctx.strokeStyle = 'rgba(201,168,76,0.25)';
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(cx - halfW, y);
-  ctx.lineTo(cx - 12, y);
-  ctx.stroke();
-  ctx.fillStyle = 'rgba(201,168,76,0.6)';
-  ctx.font = '12px Georgia, serif';
+  ctx.moveTo(cx - halfW, y); ctx.lineTo(cx - 14, y); ctx.stroke();
+  ctx.fillStyle = 'rgba(201,168,76,0.55)';
+  ctx.font = '13px Georgia, serif';
   ctx.textAlign = 'center';
   ctx.fillText('✦', cx, y + 5);
   ctx.beginPath();
-  ctx.moveTo(cx + 12, y);
-  ctx.lineTo(cx + halfW, y);
-  ctx.stroke();
-}
-
-function drawCornerOrn(
-  ctx: CanvasRenderingContext2D,
-  x: number, y: number,
-  flipX = false, flipY = false
-) {
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.scale(flipX ? -1 : 1, flipY ? -1 : 1);
-  ctx.strokeStyle = 'rgba(201,168,76,0.4)';
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(0, 0);
-  ctx.lineTo(20, 0);
-  ctx.moveTo(0, 0);
-  ctx.lineTo(0, 20);
-  ctx.stroke();
-  ctx.restore();
+  ctx.moveTo(cx + 14, y); ctx.lineTo(cx + halfW, y); ctx.stroke();
 }

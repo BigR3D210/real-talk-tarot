@@ -75,39 +75,76 @@ export const CardFront = ({ drawnCard, index, positionLabel, meaning }: CardFron
         {/* Card Header */}
         <div style={{
           background: 'linear-gradient(135deg, #1a0f2e, #2d1b5e)',
-          padding: '16px',
           borderBottom: '1px solid rgba(201,168,76,0.2)',
           textAlign: 'center',
+          position: 'relative',
+          overflow: 'hidden',
         }}>
-          <div style={{ fontSize: '2.5rem', marginBottom: '8px' }}>
-            {drawnCard.card.symbol}
+          {/* Card image */}
+          <div style={{
+            transform: drawnCard.isReversed ? 'rotate(180deg)' : 'none',
+            transition: 'transform 0.3s ease',
+          }}>
+            <img
+              src={`/cards/${drawnCard.card.id}.png`}
+              alt={drawnCard.card.name}
+              onError={(e) => {
+                const target = e.currentTarget;
+                target.style.display = 'none';
+                const fallback = target.nextElementSibling as HTMLElement;
+                if (fallback) fallback.style.display = 'flex';
+              }}
+              style={{ width: '100%', display: 'block', aspectRatio: '2/3', objectFit: 'cover' }}
+            />
+            {/* Fallback symbol (hidden if image loads) */}
+            <div style={{
+              display: 'none',
+              fontSize: '3rem',
+              color: '#c9a84c',
+              padding: '32px 16px',
+              alignItems: 'center',
+              justifyContent: 'center',
+              aspectRatio: '2/3',
+            }}>
+              {drawnCard.card.symbol}
+            </div>
           </div>
+
+          {/* Reversed badge overlay */}
+          {drawnCard.isReversed && (
+            <div style={{
+              position: 'absolute',
+              top: '8px',
+              right: '8px',
+              fontSize: '0.6rem',
+              padding: '3px 8px',
+              borderRadius: '20px',
+              fontFamily: 'Cinzel',
+              letterSpacing: '0.12em',
+              background: 'rgba(124,77,202,0.7)',
+              color: '#e9d5ff',
+              border: '1px solid rgba(124,77,202,0.6)',
+              backdropFilter: 'blur(4px)',
+            }}>
+              ↓ REVERSED
+            </div>
+          )}
+        </div>
+
+        {/* Card name + arcana */}
+        <div style={{
+          padding: '10px 16px 6px',
+          background: 'linear-gradient(135deg, #1a0f2e, #2d1b5e)',
+          textAlign: 'center',
+          borderBottom: '1px solid rgba(201,168,76,0.2)',
+        }}>
           <div className="font-cinzel text-gold-light text-sm tracking-widest">
             {drawnCard.card.name}
           </div>
-          {drawnCard.card.arcana === 'minor' && (
-            <div className="text-smoke text-xs font-raleway mt-1 capitalize">
-              {drawnCard.card.suit} • {drawnCard.card.arcana === 'minor' ? 'Minor Arcana' : 'Major Arcana'}
-            </div>
-          )}
-          {drawnCard.card.arcana === 'major' && (
-            <div className="text-smoke text-xs font-raleway mt-1">
-              Major Arcana • {drawnCard.card.symbol}
-            </div>
-          )}
-          <div className="mt-2">
-            <span style={{
-              fontSize: '0.65rem',
-              padding: '3px 10px',
-              borderRadius: '20px',
-              fontFamily: 'Cinzel',
-              letterSpacing: '0.15em',
-              background: drawnCard.isReversed ? 'rgba(124,77,202,0.3)' : 'rgba(201,168,76,0.2)',
-              color: drawnCard.isReversed ? '#b794f4' : '#c9a84c',
-              border: `1px solid ${drawnCard.isReversed ? 'rgba(124,77,202,0.4)' : 'rgba(201,168,76,0.3)'}`,
-            }}>
-              {drawnCard.isReversed ? '↓ REVERSED' : '↑ UPRIGHT'}
-            </span>
+          <div className="text-smoke text-xs font-raleway mt-1 capitalize">
+            {drawnCard.card.arcana === 'minor'
+              ? `${drawnCard.card.suit} • Minor Arcana`
+              : `Major Arcana • ${drawnCard.card.symbol}`}
           </div>
         </div>
 

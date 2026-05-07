@@ -18,22 +18,23 @@ const CardBack = ({ delay = 0, onClick, revealed }: CardBackProps) => (
       <div className="card-face" style={{
         background: 'linear-gradient(135deg, #1a0f2e 0%, #2d1b5e 50%, #1a0f2e 100%)',
         border: '1px solid rgba(201,168,76,0.4)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
         borderRadius: '8px',
+        overflow: 'hidden',
       }}>
-        <div style={{ textAlign: 'center', padding: '12px' }}>
+        <img
+          src="/cards/card-back.png"
+          alt="Card back"
+          onError={(e) => {
+            const t = e.currentTarget;
+            t.style.display = 'none';
+            (t.nextElementSibling as HTMLElement).style.display = 'flex';
+          }}
+          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+        />
+        <div style={{ display: 'none', alignItems: 'center', justifyContent: 'center', height: '100%', flexDirection: 'column', padding: '12px', textAlign: 'center' }}>
           <div style={{ fontSize: '2rem', color: '#c9a84c', marginBottom: '8px' }}>✦</div>
-          <div style={{
-            width: '60%',
-            height: '1px',
-            background: 'linear-gradient(90deg, transparent, rgba(201,168,76,0.5), transparent)',
-            margin: '0 auto 8px',
-          }} />
-          <div style={{ fontSize: '0.4rem', color: 'rgba(201,168,76,0.4)', letterSpacing: '0.3em', fontFamily: 'Cinzel' }}>
-            REAL TALK TAROT
-          </div>
+          <div style={{ width: '60%', height: '1px', background: 'linear-gradient(90deg, transparent, rgba(201,168,76,0.5), transparent)', margin: '0 auto 8px' }} />
+          <div style={{ fontSize: '0.4rem', color: 'rgba(201,168,76,0.4)', letterSpacing: '0.3em', fontFamily: 'Cinzel' }}>REAL TALK TAROT</div>
         </div>
       </div>
       {/* Card front face (revealed) */}

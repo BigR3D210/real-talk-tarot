@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { DrawnCard } from '../utils/tarotEngine'
+import { assetPath, cardImagePath } from '../utils/cardImages'
 
 interface CardBackProps {
   delay?: number
@@ -22,7 +23,7 @@ const CardBack = ({ delay = 0, onClick, revealed }: CardBackProps) => (
         overflow: 'hidden',
       }}>
         <img
-          src="/cards/card-back.png"
+          src={assetPath('cards/card-back.png')}
           alt="Card back"
           onError={(e) => {
             const t = e.currentTarget;
@@ -89,7 +90,7 @@ export const CardFront = ({ drawnCard, index, positionLabel, meaning }: CardFron
           }}>
             {!imgFailed ? (
               <img
-                src={`/cards/${drawnCard.card.id}.png`}
+                src={cardImagePath(drawnCard.card.name)}
                 alt={drawnCard.card.name}
                 onError={() => setImgFailed(true)}
                 style={{ width: '100%', display: 'block', aspectRatio: '2/3', objectFit: 'cover' }}

@@ -62,6 +62,7 @@ interface CardFrontProps {
 
 export const CardFront = ({ drawnCard, index, positionLabel, meaning }: CardFrontProps) => {
   const [visible, setVisible] = useState(false)
+  const [imgFailed, setImgFailed] = useState(false)
   useEffect(() => {
     const timer = setTimeout(() => setVisible(true), index * 200)
     return () => clearTimeout(timer)
@@ -86,29 +87,26 @@ export const CardFront = ({ drawnCard, index, positionLabel, meaning }: CardFron
             transform: drawnCard.isReversed ? 'rotate(180deg)' : 'none',
             transition: 'transform 0.3s ease',
           }}>
-            <img
-              src={`/cards/${drawnCard.card.id}.png`}
-              alt={drawnCard.card.name}
-              onError={(e) => {
-                const target = e.currentTarget;
-                target.style.display = 'none';
-                const fallback = target.nextElementSibling as HTMLElement;
-                if (fallback) fallback.style.display = 'flex';
-              }}
-              style={{ width: '100%', display: 'block', aspectRatio: '2/3', objectFit: 'cover' }}
-            />
-            {/* Fallback symbol (hidden if image loads) */}
-            <div style={{
-              display: 'none',
-              fontSize: '3rem',
-              color: '#c9a84c',
-              padding: '32px 16px',
-              alignItems: 'center',
-              justifyContent: 'center',
-              aspectRatio: '2/3',
-            }}>
-              {drawnCard.card.symbol}
-            </div>
+            {!imgFailed ? (
+              <img
+                src={`/cards/${drawnCard.card.id}.png`}
+                alt={drawnCard.card.name}
+                onError={() => setImgFailed(true)}
+                style={{ width: '100%', display: 'block', aspectRatio: '2/3', objectFit: 'cover' }}
+              />
+            ) : (
+              <div style={{
+                display: 'flex',
+                fontSize: '3rem',
+                color: '#c9a84c',
+                padding: '32px 16px',
+                alignItems: 'center',
+                justifyContent: 'center',
+                aspectRatio: '2/3',
+              }}>
+                {drawnCard.card.symbol}
+              </div>
+            )}
           </div>
 
           {/* Reversed badge overlay */}

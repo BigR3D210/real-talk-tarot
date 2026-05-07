@@ -1,6 +1,23 @@
 import { useState, useMemo } from 'react';
 import { tarotDeck, TarotCard, ReadingType } from '../data/tarotDeck';
 
+function CardImage({ id, symbol, style }: { id: string; symbol: string; style?: React.CSSProperties }) {
+  const [failed, setFailed] = useState(false);
+  if (failed) return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', aspectRatio: '2/3', fontSize: '2rem', color: '#c9a84c', ...style }}>
+      {symbol}
+    </div>
+  );
+  return (
+    <img
+      src={`/cards/${id}.png`}
+      alt={id}
+      onError={() => setFailed(true)}
+      style={{ width: '100%', display: 'block', aspectRatio: '2/3', objectFit: 'cover', ...style }}
+    />
+  );
+}
+
 const meaningTabs: { id: ReadingType | 'general'; label: string }[] = [
   { id: 'general', label: 'General' },
   { id: 'love', label: 'Love' },
@@ -41,17 +58,7 @@ function CardModal({ card, onClose }: { card: TarotCard; onClose: () => void }) 
         <div className="flex items-start justify-between mb-4">
           <div>
             <div className="mb-4 rounded overflow-hidden border border-gold/20" style={{ maxWidth: '160px' }}>
-              <img
-                src={`/cards/${card.id}.png`}
-                alt={card.name}
-                onError={(e) => {
-                  const t = e.currentTarget;
-                  t.style.display = 'none';
-                  (t.nextElementSibling as HTMLElement).style.display = 'flex';
-                }}
-                style={{ width: '100%', display: 'block' }}
-              />
-              <div className="text-4xl mb-2" style={{ display: 'none', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>{card.symbol}</div>
+              <CardImage id={card.id} symbol={card.symbol} />
             </div>
             <h2 className="font-cinzel text-xl text-gold">{card.name}</h2>
             <p className="text-smoke font-raleway text-xs mt-1">
@@ -221,18 +228,7 @@ export default function CardMeanings() {
             className="mystic-card p-3 text-center border-gold/15 hover:border-gold/50 hover:bg-gold/5 transition-all duration-300 group"
           >
             <div className="w-full overflow-hidden rounded mb-1">
-              <img
-                src={`/cards/${card.id}.png`}
-                alt={card.name}
-                onError={(e) => {
-                  const t = e.currentTarget;
-                  t.style.display = 'none';
-                  (t.nextElementSibling as HTMLElement).style.display = 'flex';
-                }}
-                style={{ width: '100%', display: 'block', aspectRatio: '2/3', objectFit: 'cover' }}
-                className="group-hover:scale-105 transition-transform duration-300"
-              />
-              <div className="text-2xl group-hover:scale-110 transition-transform" style={{ display: 'none', alignItems: 'center', justifyContent: 'center', padding: '12px' }}>{card.symbol}</div>
+              <CardImage id={card.id} symbol={card.symbol} />
             </div>
             <p className="font-cinzel text-xs text-ivory leading-tight">{card.name}</p>
             {card.suit && (
